@@ -15,9 +15,9 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: app_test
+          POSTGRES_DB: app
           POSTGRES_USER: app
-          POSTGRES_PASSWORD: '!ChangeMe!'
+          POSTGRES_PASSWORD: ChangeMe
         ports:
           - 5432:5432
         options: >-
@@ -55,19 +55,19 @@ jobs:
         run: php bin/console lint:container --no-interaction
         env:
           APP_ENV: test
-          DATABASE_URL: pgsql://app:'!ChangeMe!'@127.0.0.1:5432/app_test
+          DATABASE_URL: pgsql://app:ChangeMe@127.0.0.1:5432/app
 
       - name: Lint Twig templates
         run: php bin/console lint:twig templates/ --no-interaction
         env:
           APP_ENV: test
-          DATABASE_URL: pgsql://app:'!ChangeMe!'@127.0.0.1:5432/app_test
+          DATABASE_URL: pgsql://app:ChangeMe@127.0.0.1:5432/app
 
       - name: PHPStan analysis (level 5)
         run: php vendor/bin/phpstan analyse --no-progress --error-format=github
         env:
           APP_ENV: test
-          DATABASE_URL: pgsql://app:'!ChangeMe!'@127.0.0.1:5432/app_test
+          DATABASE_URL: pgsql://app:ChangeMe@127.0.0.1:5432/app
 
       - name: Create database
         run: |
@@ -75,10 +75,10 @@ jobs:
           php bin/console doctrine:schema:create --env=test --no-interaction
         env:
           APP_ENV: test
-          DATABASE_URL: pgsql://app:'!ChangeMe!'@127.0.0.1:5432/app_test
+          DATABASE_URL: pgsql://app:ChangeMe@127.0.0.1:5432/app
 
       - name: Run tests
         run: php bin/phpunit
         env:
           APP_ENV: test
-          DATABASE_URL: pgsql://app:'!ChangeMe!'@127.0.0.1:5432/app_test
+          DATABASE_URL: pgsql://app:ChangeMe@127.0.0.1:5432/app
