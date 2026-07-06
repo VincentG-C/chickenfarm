@@ -1,0 +1,51 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Journal de la ferme</h1>
+        <a href="{{ path('app_manager_journal_ajouter') }}" class="bg-farmGreen text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-farmGreenLight transition">
+            <i class="fa-solid fa-plus mr-1"></i> Nouvelle entrée
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Date</th>
+                    <th class="text-left px-4 py-3 font-semibold">Type</th>
+                    <th class="text-left px-4 py-3 font-semibold">Description</th>
+                    <th class="text-left px-4 py-3 font-semibold">Quantité</th>
+                    <th class="text-left px-4 py-3 font-semibold">Fermier</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="px-4 py-3">{{ entry.date|date('d/m/Y') }}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                {% if entry.type == 'ponte' %}bg-amber-100 text-amber-800
+                                {% elseif entry.type == 'naissance' %}bg-green-100 text-green-800
+                                {% elseif entry.type == 'incubation' %}bg-purple-100 text-purple-800
+                                {% elseif entry.type == 'alimentation' %}bg-yellow-100 text-yellow-800
+                                {% elseif entry.type == 'soin' %}bg-blue-100 text-blue-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ entry.type }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-gray-600 max-w-xs truncate">{{ entry.description }}</td>
+                        <td class="px-4 py-3">{{ entry.quantite > 0 ? entry.quantite : '-' }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ entry.manager.prenom }} {{ entry.manager.nom }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">Aucune entrée dans le journal.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

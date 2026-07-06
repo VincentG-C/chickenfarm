@@ -1,0 +1,229 @@
+@startuml
+!theme plain
+
+' Héritages
+class User <<abstract>> {
+    + int id
+    + string email
+    + string password
+    + string nom
+    + string prenom
+    + array roles
+    + datetime created_at
+}
+
+class Client {
+    + string telephone
+    + string adresse_livraison
+    + string adresse_facturation
+    + boolean newsletter
+}
+
+class Manager {
+    + string telephone
+    + string code_employe
+}
+
+class Admin {
+}
+
+User <|-- Client
+User <|-- Manager
+User <|-- Admin
+
+' Relations Client
+Client "1" --> "1" Panier
+Client "1" --> "0..*" Commande
+
+' Panier
+class Panier {
+    + int id
+    + datetime created_at
+    + datetime updated_at
+}
+
+Panier "1" --> "0..*" PanierProduit
+
+class PanierProduit {
+    + int id
+    + int quantite
+    + datetime date_ajout
+}
+
+PanierProduit "0..*" --> "1" Produit
+
+' Héritage Produit
+class Produit <<abstract>> {
+    + int id
+    + string nom
+    + text description
+    + float prix
+    + string image
+    + string prix_unite
+    + datetime created_at
+    + datetime updated_at
+}
+
+class Oeuf {
+    + enum calibre
+    + boolean est_feconde
+    + datetime date_ponte
+}
+
+class Viande {
+    + float poids_moyen
+    + enum type_decoupe
+}
+
+class Ticket {
+    + date date_visite
+    + int nb_places
+    + int nb_places_restantes
+    + int duree_visite
+}
+
+class Nourriture {
+    + enum type_aliment
+    + text composition
+    + float prix_unite
+}
+
+Produit <|-- Oeuf
+Produit <|-- Viande
+Produit <|-- Ticket
+Produit <|-- Nourriture
+
+' Commande
+class Commande {
+    + int id
+    + datetime date_commande
+    + float montant_total
+    + enum statut
+    + string reference
+    + text notes
+}
+
+Commande "1" --> "0..*" CommandeDetail
+
+class CommandeDetail {
+    + int id
+    + int quantite
+    + float prix_unitaire
+}
+
+CommandeDetail "0..*" --> "1" Produit
+Commande "1" --> "1" Livraison
+
+class Livraison {
+    + int id
+    + text adresse_livraison
+    + datetime date_livraison_prevue
+    + datetime date_livraison_reelle
+    + enum statut
+}
+
+' Enclos et Gallinacés
+class Enclos {
+    + int id
+    + string nom
+    + float superficie
+    + int capacite_max
+    + enum type
+    + int nb_gallinaces
+}
+
+class Gallinace <<abstract>> {
+    + int id
+    + string nom
+    + int age
+    + float poids
+    + enum sante
+    + datetime date_entree
+}
+
+Enclos "1" --> "0..*" Gallinace
+
+class Poule {
+    + int cycle_ponte
+}
+
+class Coq {
+}
+
+class Poussin {
+}
+
+Gallinace <|-- Poule
+Gallinace <|-- Coq
+Gallinace <|-- Poussin
+
+' Oeuf - Poule relation
+Oeuf "0..*" --> "1" Poule
+
+' Couveuse et Incubation
+class Couveuse {
+    + int id
+    + string nom
+    + int capacite
+    + float temperature
+    + float humidite
+    + enum statut
+}
+
+class Incubation {
+    + int id
+    + datetime date_debut
+    + datetime date_fin_prevue
+    + datetime date_fin_reelle
+    + int nb_oeufs_debut
+    + int nb_oeufs_eclos
+    + enum statut
+}
+
+Couveuse "1" --> "0..*" Incubation
+
+class Naissance {
+    + int id
+    + datetime date
+    + int nb_poussins
+    + int nb_morts
+}
+
+Incubation "1" --> "0..*" Naissance
+Naissance "0..*" --> "1" Enclos
+
+' Journal
+class JournalFerme {
+    + int id
+    + datetime date
+    + enum type
+    + text description
+    + int quantite
+    + datetime created_at
+}
+
+Manager "1" --> "0..*" JournalFerme
+
+' Table de liaison ManyToMany
+class GallinaceNourriture {
+    + int id
+    + float quantite_par_jour
+    + datetime date_debut
+    + datetime date_fin
+}
+
+Gallinace "0..*" --> "0..*" GallinaceNourriture
+Nourriture "0..*" --> "0..*" GallinaceNourriture
+
+' Stock
+class Stock {
+    + int id
+    + int quantite_disponible
+    + int seuil_alerte
+    + datetime date_derniere_entree
+    + datetime date_derniere_sortie
+}
+
+Produit "1" --> "1" Stock
+
+@enduml

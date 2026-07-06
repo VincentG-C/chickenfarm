@@ -1,0 +1,44 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block content %}
+<main class="max-w-4xl mx-auto px-6 md:px-12 py-8">
+    <h1 class="text-3xl font-bold mb-6">Mes commandes</h1>
+
+    {% if commandes|length > 0 %}
+        <div class="space-y-4">
+            {% for commande in commandes %}
+                <a href="{{ path('app_commande_detail', {'id': commande.id}) }}" class="block border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold">Commande #{{ commande.reference }}</span>
+                        <span class="text-sm text-gray-500">{{ commande.dateCommande|date('d/m/Y H:i') }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm">
+                            {% set statuts = {'en_attente': 'En attente', 'confirmee': 'Confirmée', 'en_preparation': 'En préparation', 'expediee': 'Expédiée', 'livree': 'Livrée', 'annulee': 'Annulée'} %}
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                {% if commande.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                                {% elseif commande.statut == 'confirmee' %}bg-blue-100 text-blue-800
+                                {% elseif commande.statut == 'en_preparation' %}bg-purple-100 text-purple-800
+                                {% elseif commande.statut == 'expediee' %}bg-orange-100 text-orange-800
+                                {% elseif commande.statut == 'livree' %}bg-green-100 text-green-800
+                                {% elseif commande.statut == 'annulee' %}bg-red-100 text-red-800
+                                {% endif %}">
+                                {{ statuts[commande.statut] ?? commande.statut }}
+                            </span>
+                        </span>
+                        <span class="font-bold">{{ commande.montantTotal }} €</span>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-16">
+            <i class="fa-solid fa-receipt text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg mb-4">Vous n'avez pas encore passé de commande</p>
+            <a href="{{ path('app_catalogue') }}" class="inline-block bg-farmGreen text-white font-bold px-8 py-3 rounded-full hover:bg-farmGreenLight transition">
+                Découvrir nos produits
+            </a>
+        </div>
+    {% endif %}
+</main>
+{% endblock %}

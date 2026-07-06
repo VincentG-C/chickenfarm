@@ -1,0 +1,152 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6 max-w-2xl">
+    <a href="{{ path('app_produit_index') }}" class="text-sm text-gray-500 hover:text-gray-700 mb-6 inline-block">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Retour aux produits
+    </a>
+
+    <h1 class="text-2xl font-bold mb-6">{{ produit ? 'Modifier' : 'Nouveau' }} produit</h1>
+
+    {{ form_start(form, {'attr': {'class': 'bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4'}}) }}
+
+        {# Champs communs #}
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                {{ form_label(form.nom, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                {{ form_widget(form.nom, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                {{ form_errors(form.nom) }}
+            </div>
+
+            <div>
+                {{ form_label(form.type, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                {{ form_widget(form.type, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                {{ form_errors(form.type) }}
+            </div>
+        </div>
+
+        <div>
+            {{ form_label(form.description, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                {{ form_label(form.prix, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                {{ form_widget(form.prix, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                {{ form_errors(form.prix) }}
+            </div>
+
+            <div>
+                {{ form_label(form.prixUnite, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                {{ form_widget(form.prixUnite, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                {{ form_errors(form.prixUnite) }}
+            </div>
+        </div>
+
+        <div>
+            {{ form_label(form.image, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+            {{ form_widget(form.image, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+            {{ form_errors(form.image) }}
+        </div>
+
+        {# Champs spécifiques au type (affichés dynamiquement) #}
+        <div id="type-specific-fields" class="border-t border-gray-200 pt-4">
+            {% if produit is not null %}
+                {% if produit is instanceof('App\\Entity\\Oeuf') %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.calibre, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                            {{ form_widget(form.calibre, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                            {{ form_errors(form.calibre) }}
+                        </div>
+                        <div>
+                            <div class="mt-6">
+                                {{ form_widget(form.estFeconde, {'attr': {'class': 'rounded border-gray-300 text-farmGreen focus:ring-farmGreen mr-2'}}) }}
+                                {{ form_label(form.estFeconde) }}
+                                {{ form_errors(form.estFeconde) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        {{ form_label(form.datePonte, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                        {{ form_widget(form.datePonte, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                        {{ form_errors(form.datePonte) }}
+                    </div>
+                {% elseif produit is instanceof('App\\Entity\\Viande') %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.poidsMoyen, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                            {{ form_widget(form.poidsMoyen, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                            {{ form_errors(form.poidsMoyen) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.typeDecoupe, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                            {{ form_widget(form.typeDecoupe, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                            {{ form_errors(form.typeDecoupe) }}
+                        </div>
+                    </div>
+                {% elseif produit is instanceof('App\\Entity\\Ticket') %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.dateVisite, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                            {{ form_widget(form.dateVisite, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                            {{ form_errors(form.dateVisite) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.nbPlaces, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                            {{ form_widget(form.nbPlaces, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                            {{ form_errors(form.nbPlaces) }}
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        {{ form_label(form.dureeVisite, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                        {{ form_widget(form.dureeVisite, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                        {{ form_errors(form.dureeVisite) }}
+                    </div>
+                {% elseif produit is instanceof('App\\Entity\\Nourriture') %}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            {{ form_label(form.typeAliment, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                            {{ form_widget(form.typeAliment, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                            {{ form_errors(form.typeAliment) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.composition, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                            {{ form_widget(form.composition, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                            {{ form_errors(form.composition) }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        {# Stock #}
+        <div class="border-t border-gray-200 pt-4">
+            <h2 class="font-semibold text-gray-700 mb-3">Stock initial</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    {{ form_label(form.quantiteStock, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                    {{ form_widget(form.quantiteStock, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                    {{ form_errors(form.quantiteStock) }}
+                </div>
+
+                <div>
+                    {{ form_label(form.seuilAlerte, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                    {{ form_widget(form.seuilAlerte, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                    {{ form_errors(form.seuilAlerte) }}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+            <a href="{{ path('app_produit_index') }}" class="text-gray-600 text-sm font-semibold hover:text-gray-800">Annuler</a>
+            <button type="submit" class="bg-farmGreen text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-farmGreenLight transition">
+                {{ produit ? 'Enregistrer' : 'Créer le produit' }}
+            </button>
+        </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

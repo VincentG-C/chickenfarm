@@ -1,0 +1,84 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6 max-w-4xl">
+    <a href="{{ path('app_user_index') }}" class="text-sm text-gray-500 hover:text-gray-700 mb-6 inline-block">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Retour aux utilisateurs
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-14 h-14 bg-farmGreen rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    {{ user.prenom|first }}{{ user.nom|first }}
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">{{ user.prenom }} {{ user.nom }}</h1>
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold
+                        {% if user|class_name == 'Admin' %}bg-purple-100 text-purple-800
+                        {% elseif user|class_name == 'Manager' %}bg-blue-100 text-blue-800
+                        {% else %}bg-green-100 text-green-800
+                        {% endif %}">
+                        {{ user|class_name }}
+                    </span>
+                </div>
+            </div>
+            <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="bg-farmGreen text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-farmGreenLight transition">
+                <i class="fa-solid fa-pen mr-1"></i> Modifier
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 text-sm">
+            <div>
+                <p class="text-gray-500 mb-1">Email</p>
+                <p class="font-semibold">{{ user.email }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500 mb-1">Inscrit le</p>
+                <p class="font-semibold">{{ user.createdAt|date('d/m/Y à H:i') }}</p>
+            </div>
+        </div>
+    </div>
+
+    {% if user|class_name == 'Client' %}
+        <h2 class="text-xl font-bold mb-4">Commandes</h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                        <th class="text-left px-4 py-3 font-semibold">Référence</th>
+                        <th class="text-left px-4 py-3 font-semibold">Date</th>
+                        <th class="text-left px-4 py-3 font-semibold">Montant</th>
+                        <th class="text-left px-4 py-3 font-semibold">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for commande in user.commandes %}
+                        <tr class="border-b border-gray-100">
+                            <td class="px-4 py-3 font-semibold">#{{ commande.reference }}</td>
+                            <td class="px-4 py-3 text-gray-500">{{ commande.dateCommande|date('d/m/Y') }}</td>
+                            <td class="px-4 py-3 font-semibold">{{ commande.montantTotal }} €</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                    {% if commande.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                                    {% elseif commande.statut == 'confirmee' %}bg-blue-100 text-blue-800
+                                    {% elseif commande.statut == 'en_preparation' %}bg-purple-100 text-purple-800
+                                    {% elseif commande.statut == 'expediee' %}bg-orange-100 text-orange-800
+                                    {% elseif commande.statut == 'livree' %}bg-green-100 text-green-800
+                                    {% elseif commande.statut == 'annulee' %}bg-red-100 text-red-800
+                                    {% endif %}">
+                                    {{ commande.statut }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="px-4 py-6 text-center text-gray-500">Aucune commande.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

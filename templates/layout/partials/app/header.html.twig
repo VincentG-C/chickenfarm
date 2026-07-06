@@ -1,0 +1,33 @@
+<header class="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 md:px-8 py-3 flex items-center gap-3 md:gap-6">
+    <a href="{{ path('app_home') }}" class="flex items-center text-brand text-xl font-bold tracking-tight shrink-0">
+        <i class="fa-solid fa-egg mr-1.5 text-2xl"></i>
+        <span class="hidden sm:inline">Ferme des Poulettes</span>
+    </a>
+
+    <a href="{{ path('app_catalogue') }}" class="flex-1 max-w-sm mx-auto hidden sm:flex items-center gap-2 border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-500 hover:shadow-sm transition min-w-0">
+        <i class="fa-solid fa-magnifying-glass text-brand shrink-0"></i>
+        <span class="truncate">Découvrir nos produits</span>
+    </a>
+
+    <nav class="flex items-center gap-1 ml-2">
+        <a href="{{ path('app_catalogue') }}" class="text-sm font-semibold text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-full hover:bg-gray-50 transition whitespace-nowrap">
+            Boutique
+        </a>
+        <a href="{{ path('app_catalogue') ~ '?type=ticket' }}" class="text-sm font-semibold text-gray-600 hover:text-gray-800 px-3 py-1.5 rounded-full hover:bg-gray-50 transition whitespace-nowrap">
+            Visites
+        </a>
+    </nav>
+
+    <div class="flex items-center gap-2 shrink-0 ml-auto">
+        {% if app.user %}
+            <a href="{{ path('app_panier') }}" class="relative p-2 text-gray-600 hover:bg-gray-50 rounded-full" aria-label="Panier">
+                <i class="fa-solid fa-basket-shopping"></i>
+            </a>
+            {% include 'layout/partials/app/header_profile_menu.html.twig' %}
+        {% else %}
+            <a href="{{ path('app_login') }}" class="text-sm font-semibold py-2 px-4 border border-gray-200 rounded-full hover:shadow-md transition whitespace-nowrap">
+                Se connecter
+            </a>
+        {% endif %}
+    </div>
+</header>

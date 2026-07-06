@@ -1,0 +1,53 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6 max-w-2xl">
+    <a href="{{ path('app_user_index') }}" class="text-sm text-gray-500 hover:text-gray-700 mb-6 inline-block">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Retour aux utilisateurs
+    </a>
+
+    <h1 class="text-2xl font-bold mb-6">Modifier l'utilisateur</h1>
+
+    {{ form_start(form, {'attr': {'class': 'bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4'}}) }}
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                {{ form_label(form.prenom, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                {{ form_widget(form.prenom, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                {{ form_errors(form.prenom) }}
+            </div>
+            <div>
+                {{ form_label(form.nom, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+                {{ form_widget(form.nom, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+                {{ form_errors(form.nom) }}
+            </div>
+        </div>
+
+        <div>
+            {{ form_label(form.email, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+            {{ form_widget(form.email, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+            {{ form_errors(form.email) }}
+        </div>
+
+        <div>
+            {{ form_label(form.role, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+            {{ form_widget(form.role, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+            {{ form_errors(form.role) }}
+        </div>
+
+        <div>
+            {{ form_label(form.plainPassword, null, {'label_attr': {'class': 'block text-sm font-semibold text-gray-700 mb-1'}}) }}
+            {{ form_widget(form.plainPassword, {'attr': {'class': 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-farmGreen focus:border-transparent'}}) }}
+            {{ form_errors(form.plainPassword) }}
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+            <a href="{{ path('app_user_index') }}" class="text-gray-600 text-sm font-semibold hover:text-gray-800">Annuler</a>
+            <button type="submit" class="bg-farmGreen text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-farmGreenLight transition">
+                Enregistrer
+            </button>
+        </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6 max-w-2xl">
+    <a href="{{ path('app_manager_journal') }}" class="text-sm text-gray-500 hover:text-gray-700 mb-6 inline-block">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Retour au journal
+    </a>
+
+    <h1 class="text-2xl font-bold mb-6">Nouvelle entrée</h1>
+
+    <form method="POST" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
+        <div>
+            <label class="block text-sm font-semibold mb-1">Date</label>
+            <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold mb-1">Type</label>
+            <select name="type" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                <option value="ponte">🥚 Ponte</option>
+                <option value="incubation">🔬 Incubation</option>
+                <option value="naissance">🐣 Naissance</option>
+                <option value="abattage">🔪 Abattage</option>
+                <option value="soin">💊 Soin</option>
+                <option value="alimentation">🌾 Alimentation</option>
+                <option value="autre">📝 Autre</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold mb-1">Quantité</label>
+            <input type="number" name="quantite" value="0" min="0" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+        </div>
+
+        <div>
+            <label class="block text-sm font-semibold mb-1">Description</label>
+            <textarea name="description" rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Décrivez l'événement..."></textarea>
+        </div>
+
+        <button type="submit" class="bg-farmGreen text-white font-bold px-6 py-2.5 rounded-full hover:bg-farmGreenLight transition">
+            Enregistrer
+        </button>
+    </form>
+</div>
+{% endblock %}

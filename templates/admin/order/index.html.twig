@@ -1,0 +1,51 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-6">Commandes</h1>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Référence</th>
+                    <th class="text-left px-4 py-3 font-semibold">Client</th>
+                    <th class="text-left px-4 py-3 font-semibold">Date</th>
+                    <th class="text-left px-4 py-3 font-semibold">Montant</th>
+                    <th class="text-left px-4 py-3 font-semibold">Statut</th>
+                    <th class="text-left px-4 py-3 font-semibold">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commande in commandes %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="px-4 py-3 font-semibold">#{{ commande.reference }}</td>
+                        <td class="px-4 py-3">{{ commande.client.prenom }} {{ commande.client.nom }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ commande.dateCommande|date('d/m/Y H:i') }}</td>
+                        <td class="px-4 py-3 font-semibold">{{ commande.montantTotal }} €</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                {% if commande.statut == 'en_attente' %}bg-yellow-100 text-yellow-800
+                                {% elseif commande.statut == 'confirmee' %}bg-blue-100 text-blue-800
+                                {% elseif commande.statut == 'en_preparation' %}bg-purple-100 text-purple-800
+                                {% elseif commande.statut == 'expediee' %}bg-orange-100 text-orange-800
+                                {% elseif commande.statut == 'livree' %}bg-green-100 text-green-800
+                                {% elseif commande.statut == 'annulee' %}bg-red-100 text-red-800
+                                {% endif %}">
+                                {{ commande.statut }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <a href="{{ path('app_order_show', {'id': commande.id}) }}" class="text-farmGreen font-semibold hover:underline">Voir</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">Aucune commande.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

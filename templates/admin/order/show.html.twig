@@ -1,0 +1,67 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6 max-w-4xl">
+    <a href="{{ path('app_order_index') }}" class="text-sm text-gray-500 hover:text-gray-700 mb-6 inline-block">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Retour aux commandes
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-2xl font-bold">Commande #{{ commande.reference }}</h1>
+            <form method="POST" action="{{ path('app_order_statut', {'id': commande.id}) }}" class="flex gap-2">
+                <select name="statut" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    <option value="en_attente" {{ commande.statut == 'en_attente' ? 'selected' : '' }}>En attente</option>
+                    <option value="confirmee" {{ commande.statut == 'confirmee' ? 'selected' : '' }}>Confirmée</option>
+                    <option value="en_preparation" {{ commande.statut == 'en_preparation' ? 'selected' : '' }}>En préparation</option>
+                    <option value="expediee" {{ commande.statut == 'expediee' ? 'selected' : '' }}>Expédiée</option>
+                    <option value="livree" {{ commande.statut == 'livree' ? 'selected' : '' }}>Livrée</option>
+                    <option value="annulee" {{ commande.statut == 'annulee' ? 'selected' : '' }}>Annulée</option>
+                </select>
+                <button type="submit" class="bg-farmGreen text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-farmGreenLight transition">
+                    Mettre à jour
+                </button>
+            </form>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+            <p><strong>Client :</strong> {{ commande.client.prenom }} {{ commande.client.nom }}</p>
+            <p><strong>Email :</strong> {{ commande.client.email }}</p>
+            <p><strong>Date :</strong> {{ commande.dateCommande|date('d/m/Y H:i') }}</p>
+            <p><strong>Montant :</strong> {{ commande.montantTotal }} €</p>
+        </div>
+    </div>
+
+    <h2 class="text-xl font-bold mb-4">Produits</h2>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Produit</th>
+                    <th class="text-left px-4 py-3 font-semibold">Prix unitaire</th>
+                    <th class="text-left px-4 py-3 font-semibold">Quantité</th>
+                    <th class="text-left px-4 py-3 font-semibold">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in commande.details %}
+                    <tr class="border-b border-gray-100">
+                        <td class="px-4 py-3 font-semibold">{{ detail.produit.nom }}</td>
+                        <td class="px-4 py-3">{{ detail.prixUnitaire }} €</td>
+                        <td class="px-4 py-3">{{ detail.quantite }}</td>
+                        <td class="px-4 py-3 font-bold">{{ (detail.quantite * detail.prixUnitaire)|number_format(2) }} €</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if commande.livraison %}
+        <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="font-bold text-lg mb-4">Livraison</h2>
+            <p class="text-sm"><strong>Adresse :</strong> {{ commande.livraison.adresseLivraison }}</p>
+            <p class="text-sm"><strong>Prévue le :</strong> {{ commande.livraison.dateLivraisonPrevue|date('d/m/Y') }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block content %}
+<main class="max-w-6xl mx-auto px-6 md:px-12 py-8">
+    <h1 class="text-3xl font-bold mb-2">Notre catalogue</h1>
+    <p class="text-gray-500 mb-6">Découvrez tous nos produits de la ferme</p>
+
+    {# Filter tabs #}
+    <div class="flex flex-wrap gap-2 mb-8">
+        <a href="{{ path('app_catalogue') }}" class="px-4 py-2 rounded-full text-sm font-semibold {% if not type %}bg-farmGreen text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition">
+            Tous
+        </a>
+        <a href="{{ path('app_catalogue') ~ '?type=oeuf' }}" class="px-4 py-2 rounded-full text-sm font-semibold {% if type == 'oeuf' %}bg-farmGreen text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition">
+            <i class="fa-solid fa-egg mr-1"></i> Œufs
+        </a>
+        <a href="{{ path('app_catalogue') ~ '?type=viande' }}" class="px-4 py-2 rounded-full text-sm font-semibold {% if type == 'viande' %}bg-farmGreen text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition">
+            <i class="fa-solid fa-drumstick-bite mr-1"></i> Viandes
+        </a>
+        <a href="{{ path('app_catalogue') ~ '?type=ticket' }}" class="px-4 py-2 rounded-full text-sm font-semibold {% if type == 'ticket' %}bg-farmGreen text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition">
+            <i class="fa-solid fa-ticket mr-1"></i> Visites
+        </a>
+        <a href="{{ path('app_catalogue') ~ '?type=nourriture' }}" class="px-4 py-2 rounded-full text-sm font-semibold {% if type == 'nourriture' %}bg-farmGreen text-white{% else %}bg-gray-100 text-gray-700 hover:bg-gray-200{% endif %} transition">
+            <i class="fa-solid fa-seedling mr-1"></i> Alimentation
+        </a>
+    </div>
+
+    {# Products grid #}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for produit in produits %}
+            <div class="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition group">
+                <div class="bg-eggShell h-44 flex items-center justify-center text-6xl group-hover:scale-110 transition">
+                    {% if 'oeuf' in produit|class_name|lower %}
+                        <i class="fa-solid fa-egg text-brand"></i>
+                    {% elseif 'viande' in produit|class_name|lower %}
+                        <i class="fa-solid fa-drumstick-bite text-amber-700"></i>
+                    {% elseif 'ticket' in produit|class_name|lower %}
+                        <i class="fa-solid fa-ticket text-green-600"></i>
+                    {% elseif 'nourriture' in produit|class_name|lower %}
+                        <i class="fa-solid fa-seedling text-green-500"></i>
+                    {% else %}
+                        <i class="fa-solid fa-box text-gray-400"></i>
+                    {% endif %}
+                </div>
+                <div class="p-4">
+                    <h3 class="font-semibold text-lg">{{ produit.nom }}</h3>
+                    <p class="text-gray-500 text-sm mt-1">{{ produit.description|slice(0, 60) ~ (produit.description|length > 60 ? '...' : '') }}</p>
+                    {% if produit.stock %}
+                        <p class="text-xs mt-2 {% if produit.stock.quantiteDisponible > 0 %}text-green-600{% else %}text-red-500{% endif %}">
+                            {% if produit.stock.quantiteDisponible > 0 %}
+                                <i class="fa-solid fa-circle-check"></i> En stock ({{ produit.stock.quantiteDisponible }})
+                            {% else %}
+                                <i class="fa-solid fa-circle-xmark"></i> Rupture de stock
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="font-bold text-lg text-brand">{{ produit.prix }} €{% if produit.prixUnite %} / {{ produit.prixUnite }}{% endif %}</span>
+                        <a href="{{ path('app_catalogue_detail', {'id': produit.id}) }}" class="text-sm font-semibold text-farmGreen hover:underline">
+                            Détails →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <p class="col-span-full text-center text-gray-500 py-10">Aucun produit trouvé.</p>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

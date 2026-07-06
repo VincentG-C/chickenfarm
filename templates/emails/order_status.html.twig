@@ -1,0 +1,26 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block email_title %}Mise à jour commande {{ commande.reference }}{% endblock %}
+
+{% block email_content %}
+    <h1 style="font-size: 24px; margin: 0 0 20px; color: #1f2937;">Bonjour {{ client.prenom }},</h1>
+
+    <p style="font-size: 16px; line-height: 1.6; color: #4b5563; margin: 0 0 16px;">
+        Le statut de votre commande <strong>n°{{ commande.reference }}</strong> a été mis à jour.
+    </p>
+
+    <div style="text-align: center; margin: 30px 0; padding: 24px; background-color: #fef3c7; border-radius: 12px;">
+        <p style="font-size: 14px; color: #92400e; margin: 0 0 8px;">Nouveau statut :</p>
+        <p style="font-size: 28px; font-weight: bold; color: #d97706; margin: 0;">{{ statutLabel }}</p>
+    </div>
+
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ url('app_commande_detail', {id: commande.id}) }}" style="display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; padding: 14px 32px; border-radius: 8px;">
+            Suivre ma commande
+        </a>
+    </div>
+
+    <p style="font-size: 14px; line-height: 1.6; color: #9ca3af; margin: 0;">
+        L'équipe de la <strong>Ferme des Poulettes</strong>
+    </p>
+{% endblock %}

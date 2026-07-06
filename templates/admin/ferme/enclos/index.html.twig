@@ -1,0 +1,41 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-6">Gestion des enclos</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for enclo in enclos %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4 bg-eggShell border-b border-gray-100">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-lg">{{ enclo.nom }}</h3>
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold
+                            {% if enclo.type == 'poulailler' %}bg-green-100 text-green-800
+                            {% elseif enclo.type == 'enclos_exterieur' %}bg-blue-100 text-blue-800
+                            {% else %}bg-purple-100 text-purple-800{% endif %}">
+                            {{ enclo.type }}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-4 space-y-2 text-sm">
+                    <p><strong>Superficie :</strong> {{ enclo.superficie }} m²</p>
+                    <p><strong>Capacité max :</strong> {{ enclo.capaciteMax }}</p>
+                    <p><strong>Occupants :</strong> {{ enclo.nbGallinaces }} / {{ enclo.capaciteMax }}</p>
+                    {% set pourcentage = (enclo.nbGallinaces / enclo.capaciteMax) * 100 %}
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-farmGreen h-2 rounded-full" style="width: {{ pourcentage > 100 ? 100 : pourcentage }}%"></div>
+                    </div>
+                </div>
+                <div class="p-3 border-t border-gray-100 bg-gray-50">
+                    <a href="{{ path('app_manager_enclos_detail', {'id': enclo.id}) }}" class="text-sm font-semibold text-farmGreen hover:underline">
+                        Voir les gallinacés →
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <p class="col-span-full text-gray-500">Aucun enclos créé.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

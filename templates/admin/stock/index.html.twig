@@ -1,0 +1,61 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-6">Gestion des stocks</h1>
+
+    {% if alertes|length > 0 %}
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+            <h2 class="font-bold text-red-800 mb-2"><i class="fa-solid fa-bell mr-1"></i> Alertes stocks bas</h2>
+            <ul class="space-y-1">
+                {% for stock in alertes %}
+                    <li class="text-sm text-red-700 flex items-center justify-between">
+                        <span>{{ stock.produit.nom }} : <strong>{{ stock.quantiteDisponible }}</strong> restants (seuil : {{ stock.seuilAlerte }})</span>
+                        <a href="#stock-{{ stock.id }}" class="text-farmGreen font-semibold hover:underline">Ajuster</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Produit</th>
+                    <th class="text-left px-4 py-3 font-semibold">Type</th>
+                    <th class="text-left px-4 py-3 font-semibold">Quantité disponible</th>
+                    <th class="text-left px-4 py-3 font-semibold">Seuil d'alerte</th>
+                    <th class="text-left px-4 py-3 font-semibold">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stock in stocks %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 {% if stock.quantiteDisponible <= stock.seuilAlerte %}bg-red-50{% endif %}" id="stock-{{ stock.id }}">
+                        <td class="px-4 py-3 font-semibold">{{ stock.produit.nom }}</td>
+                        <td class="px-4 py-3 text-gray-500">{{ stock.produit|class_name }}</td>
+                        <td class="px-4 py-3">
+                            <span class="{% if stock.quantiteDisponible <= stock.seuilAlerte %}text-red-600 font-bold{% endif %}">
+                                {{ stock.quantiteDisponible }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">{{ stock.seuilAlerte }}</td>
+                        <td class="px-4 py-3">
+                            <form method="POST" action="{{ path('app_stock_edit', {'id': stock.id}) }}" class="flex gap-2">
+                                <input type="number" name="quantite" value="{{ stock.quantiteDisponible }}" min="0" class="w-20 border border-gray-300 rounded-lg px-2 py-1 text-center text-sm">
+                                <button type="submit" class="bg-farmGreen text-white px-3 py-1 rounded-lg text-xs font-semibold hover:bg-farmGreenLight transition">
+                                    Mettre à jour
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">Aucun stock trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6">
+    <a href="{{ path('app_manager_couveuses') }}" class="text-sm text-gray-500 hover:text-gray-700 mb-6 inline-block">
+        <i class="fa-solid fa-arrow-left mr-1"></i> Retour aux couveuses
+    </a>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-2xl font-bold">{{ couveuse.nom }}</h1>
+            <span class="px-3 py-1 rounded-full text-sm font-semibold
+                {% if couveuse.statut == 'disponible' %}bg-green-100 text-green-800
+                {% elseif couveuse.statut == 'en_marche' %}bg-blue-100 text-blue-800
+                {% elseif couveuse.statut == 'maintenance' %}bg-yellow-100 text-yellow-800
+                {% else %}bg-red-100 text-red-800{% endif %}">
+                {{ couveuse.statut }}
+            </span>
+        </div>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+            <p><strong>Capacité :</strong> {{ couveuse.capacite }} œufs</p>
+            <p><strong>Température :</strong> {{ couveuse.temperature ?? 'N/A' }} °C</p>
+            <p><strong>Humidité :</strong> {{ couveuse.humidite ?? 'N/A' }} %</p>
+        </div>
+    </div>
+
+    <h2 class="text-xl font-bold mb-4">Incubations</h2>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Date début</th>
+                    <th class="text-left px-4 py-3 font-semibold">Fin prévue</th>
+                    <th class="text-left px-4 py-3 font-semibold">Œufs début</th>
+                    <th class="text-left px-4 py-3 font-semibold">Éclos</th>
+                    <th class="text-left px-4 py-3 font-semibold">Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incubation in couveuse.incubations %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="px-4 py-3">{{ incubation.dateDebut|date('d/m/Y') }}</td>
+                        <td class="px-4 py-3">{{ incubation.dateFinPrevue ? incubation.dateFinPrevue|date('d/m/Y') : '-' }}</td>
+                        <td class="px-4 py-3">{{ incubation.nbOeufsDebut }}</td>
+                        <td class="px-4 py-3">{{ incubation.nbOeufsEclos }}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                {% if incubation.statut == 'en_cours' %}bg-blue-100 text-blue-800
+                                {% elseif incubation.statut == 'terminee' %}bg-green-100 text-green-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ incubation.statut }}
+                            </span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">Aucune incubation.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

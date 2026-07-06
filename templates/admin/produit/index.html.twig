@@ -1,0 +1,76 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold">Gestion des produits</h1>
+        <a href="{{ path('app_produit_new') }}" class="bg-farmGreen text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-farmGreenLight transition">
+            <i class="fa-solid fa-plus mr-1"></i> Nouveau produit
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                    <th class="text-left px-4 py-3 font-semibold">Nom</th>
+                    <th class="text-left px-4 py-3 font-semibold">Type</th>
+                    <th class="text-left px-4 py-3 font-semibold">Prix</th>
+                    <th class="text-left px-4 py-3 font-semibold">Stock</th>
+                    <th class="text-left px-4 py-3 font-semibold">Statut</th>
+                    <th class="text-left px-4 py-3 font-semibold">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produit in produits %}
+                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                        <td class="px-4 py-3 font-semibold">{{ produit.nom }}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                {% if produit|class_name == 'Oeuf' %}bg-amber-100 text-amber-800
+                                {% elseif produit|class_name == 'Viande' %}bg-red-100 text-red-800
+                                {% elseif produit|class_name == 'Ticket' %}bg-blue-100 text-blue-800
+                                {% elseif produit|class_name == 'Nourriture' %}bg-green-100 text-green-800
+                                {% else %}bg-gray-100 text-gray-800
+                                {% endif %}">
+                                {{ produit|class_name }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">{{ produit.prix }} €{% if produit.prixUnite %} / {{ produit.prixUnite }}{% endif %}</td>
+                        <td class="px-4 py-3">
+                            {% if produit.stock %}
+                                <span class="{% if produit.stock.quantiteDisponible <= produit.stock.seuilAlerte %}text-red-600 font-bold{% endif %}">
+                                    {{ produit.stock.quantiteDisponible }}
+                                </span>
+                            {% else %}
+                                <span class="text-gray-400">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if produit.stock and produit.stock.quantiteDisponible > 0 %}
+                                <span class="text-green-600 text-xs font-semibold">Disponible</span>
+                            {% else %}
+                                <span class="text-red-600 text-xs font-semibold">Rupture</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 flex gap-2">
+                            <a href="{{ path('app_produit_edit', {'id': produit.id}) }}" class="text-farmGreen font-semibold hover:underline text-sm">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            <form method="POST" action="{{ path('app_produit_delete', {'id': produit.id}) }}" onsubmit="return confirm('Supprimer ce produit ?')">
+                                <button type="submit" class="text-red-600 font-semibold hover:underline text-sm">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">Aucun produit trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

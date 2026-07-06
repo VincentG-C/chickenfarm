@@ -1,0 +1,130 @@
+{% extends 'layout/admin.html.twig' %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-6">Tableau de bord</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                    <i class="fa-solid fa-users text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold">{{ totalClients }}</p>
+                    <p class="text-sm text-gray-500">Clients</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
+                    <i class="fa-solid fa-receipt text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold">{{ totalCommandes }}</p>
+                    <p class="text-sm text-gray-500">Commandes</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
+                    <i class="fa-solid fa-egg text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold">{{ totalEnclos }}</p>
+                    <p class="text-sm text-gray-500">Enclos</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                    <i class="fa-solid fa-box text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold">{{ totalProduits }}</p>
+                    <p class="text-sm text-gray-500">Produits</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center text-red-600">
+                    <i class="fa-solid fa-exclamation-triangle text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold">{{ stocksFaibles|length }}</p>
+                    <p class="text-sm text-gray-500">Stocks faibles</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="font-bold text-lg mb-4">Commandes en attente</h2>
+            {% if commandesRecentes|length > 0 %}
+                <ul class="space-y-2">
+                    {% for commande in commandesRecentes %}
+                        <li class="flex items-center justify-between border-b border-gray-100 pb-2">
+                            <span class="font-semibold text-sm">#{{ commande.reference }}</span>
+                            <span class="text-sm text-gray-500">{{ commande.montantTotal }} €</span>
+                            <span class="text-xs text-gray-400">{{ commande.dateCommande|date('d/m/Y') }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-gray-500 text-sm">Aucune commande en attente.</p>
+            {% endif %}
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 class="font-bold text-lg mb-4">Journal récent</h2>
+            {% if journalRecent|length > 0 %}
+                <ul class="space-y-2">
+                    {% for entry in journalRecent %}
+                        <li class="flex items-center justify-between border-b border-gray-100 pb-2">
+                            <span class="text-sm">
+                                {% if entry.type == 'ponte' %}🥚
+                                {% elseif entry.type == 'incubation' %}🔬
+                                {% elseif entry.type == 'naissance' %}🐣
+                                {% elseif entry.type == 'alimentation' %}🌾
+                                {% elseif entry.type == 'soin' %}💊
+                                {% elseif entry.type == 'abattage' %}🔪
+                                {% else %}📝
+                                {% endif %}
+                                {{ entry.type }}
+                            </span>
+                            <span class="text-sm text-gray-500">{{ entry.quantite > 0 ? 'x' ~ entry.quantite : '' }}</span>
+                            <span class="text-xs text-gray-400">{{ entry.createdAt|date('d/m/Y') }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-gray-500 text-sm">Aucune entrée récente.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if stocksFaibles|length > 0 %}
+        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+            <h2 class="font-bold text-yellow-800 mb-2"><i class="fa-solid fa-bell mr-1"></i> Alertes stocks</h2>
+            <ul class="space-y-1">
+                {% for stock in stocksFaibles %}
+                    <li class="text-sm text-yellow-700">
+                        {{ stock.produit.nom }} : {{ stock.quantiteDisponible }} restants (seuil : {{ stock.seuilAlerte }})
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
