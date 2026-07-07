@@ -16,7 +16,7 @@ Application web de gestion et de vente pour une ferme avicole : élevage de poul
 
 ```bash
 # 1. Cloner le projet
-git clone <url-du-repo> chicken-farm
+git clone git@github.com:VincentG-C/chickenfarm.git
 cd chicken-farm
 
 # 2. Premier lancement (build + démarrage)
