@@ -9,6 +9,15 @@ sh:
 cache:
 	docker compose exec -it php php bin/console cache:clear
 
+migrate:
+	docker compose exec -it php php bin/console doctrine:migrations:migrate --no-interaction
+
+fixtures:
+	docker compose exec -it php php bin/console doctrine:fixtures:load --no-interaction
+
+db: migrate fixtures
+	@echo "==> Base de données prête (migrations + fixtures) !"
+
 logs:
 	docker compose logs -f --tail=100 php
 
@@ -52,6 +61,9 @@ help:
 	@echo "  down            - Stop and remove the Docker containers"
 	@echo "  restart         - Restart the Docker containers"
 	@echo "  cache           - Clear the Symfony cache"
+	@echo "  migrate         - Run Doctrine migrations"
+	@echo "  fixtures        - Load test data (AppFixtures)"
+	@echo "  db              - Run migrations + fixtures (one shot)"
 	@echo "  logs            - Follow the logs of the PHP container"
 	@echo "  lint-container  - Validate Symfony container configuration"
 	@echo "  lint-twig       - Validate Twig templates syntax"

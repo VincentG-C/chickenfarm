@@ -1,27 +1,23 @@
-# AGENTS.md — Plateforme de location (type Airbnb)
+# AGENTS.md — Chicken Farm (Ferme de poules)
 
 Instructions pour les agents IA travaillant sur ce dépôt. Répondre en **français**. Ne pas ajouter de commentaires dans le code PHP/Twig/JS sauf nécessité métier non évidente.
 
 ## Contexte projet
 
-Application web de réservation de logements entre particuliers et professionnels (modèle Airbnb). Référence fonctionnelle : `Cahier des charges.md`. Schéma cible BDD : `PlantText.txt`.
+Application web de gestion et de vente pour une ferme avicole. Référence fonctionnelle : `Cahier des charges.md`. Schéma des entités : `entitesUML.txt`. Déployé sur Heroku.
 
-### Utilisateurs et rôles (cahier des charges)
+### Utilisateurs et rôles
 
-| Rôle | Capacités principales |
-|------|------------------------|
-| **Voyageur** | Recherche, réservation, paiement, avis, messagerie |
-| **Hôte** | Annonces, calendrier, tarifs, réservations, revenus |
-| **Administrateur** | Modération, utilisateurs, litiges, reporting |
-| **Super Admin** | Accès complet plateforme |
+| Rôle | Classe | Capacités principales |
+|------|--------|------------------------|
+| **Client** | `Client` (étend `User`) | Catalogue, panier, commandes, historique |
+| **Manager** | `Manager` (étend `User`) | Gestion ferme (enclos, couveuses, journal), stocks |
+| **Admin** | `Admin` (étend `User`) | Accès complet : produits, commandes, utilisateurs, ferme |
+| **Super Admin** | `Admin` avec `ROLE_SUPER_ADMIN` | Accès total + configuration |
 
-Rôles Symfony à aligner sur le métier : `ROLE_USER`, `ROLE_HOST`, `ROLE_ADMIN`, `ROLE_SUPER_ADMIN` (adapter `config/packages/security.yaml` et `role_hierarchy` au fur et à mesure).
+Héritage : Single Table Inheritance sur `User` avec colonne discriminante `type` (`client`, `manager`, `admin`).
 
-### MVP (priorité développement)
-
-Inclus : authentification, annonces, recherche, réservation, Stripe, messagerie, avis, dashboards hôte/admin.
-
-Exclu phase 1 : IA avancée, expériences, tarification dynamique, fidélité, apps natives.
+Rôles Symfony : `ROLE_USER`, `ROLE_MANAGER`, `ROLE_ADMIN`, `ROLE_SUPER_ADMIN` (hiérarchie dans `security.yaml`).
 
 ---
 
@@ -29,15 +25,14 @@ Exclu phase 1 : IA avancée, expériences, tarification dynamique, fidélité, a
 
 | Composant | Version / choix |
 |-----------|-----------------|
-| PHP | **8.4** (`>=8.4` dans `composer.json`, image `php:8.4-fpm-alpine`) |
+| PHP | **8.4** (`>=8.4` dans `composer.json`) |
 | Symfony | **8.0.\*** |
-| API | **API Platform 4.2** (REST, stateless par défaut) |
+| API | **NelmioApiDocBundle** (Swagger UI, pas API Platform) |
 | ORM | Doctrine ORM 3 + Migrations |
-| BDD | **PostgreSQL 16** (Alpine via Docker) |
+| BDD | **PostgreSQL 16** |
 | Front | Twig, Asset Mapper, Stimulus, UX Turbo |
-| CSS | TailwindCSS (prévu cahier des charges — à intégrer si absent) |
-| Cache / temps réel | Redis, Mercure (prévus — services commentés dans `compose.yaml`) |
-| Files d’attente | Symfony Messenger (`doctrine://default`, worker `messenger-worker`) |
+| CSS | TailwindCSS |
+| Files d'attente | Symfony Messenger (`doctrine://default`) |
 | Email dev | Mailpit (SMTP 1025, UI 8025) |
 | Tests | PHPUnit 12 |
 
@@ -61,7 +56,7 @@ make logs      # logs PHP
 | Mailpit | http://localhost:8025 |
 | PostgreSQL | `localhost:5439` |
 
-**Toujours exécuter les commandes Symfony/Composer/PHPUnit dans le conteneur `php`**, sauf si l’utilisateur travaille hors Docker :
+**Toujours exécuter les commandes Symfony/Composer/PHPUnit dans le conteneur `php`** :
 
 ```bash
 docker compose exec php php bin/console <commande>
@@ -69,7 +64,31 @@ docker compose exec php composer require <package>
 docker compose exec php php bin/phpunit
 ```
 
-Variables d’environnement clés (voir `compose.yaml`, `.env.example`) : `DATABASE_URL`, `MESSENGER_TRANSPORT_DSN`, `MAILER_DSN`, `APP_SECRET`.
+Variables d'environnement clés : `DATABASE_URL`, `MESSENGER_TRANSPORT_DSN`, `MAILER_DSN`, `APP_SECRET`.
+
+---
+
+## Déploiement Heroku
+
+```bash
+git push heroku main
+# Release command : migrations automatiques + cache clear
+```
+
+| Service | URL |
+|---------|-----|
+| App | https://chicken-farm-47b0bd212f2d.herokuapp.com |
+| Swagger UI | https://chicken-farm-47b0bd212f2d.herokuapp.com/api/doc |
+| Swagger JSON | https://chicken-farm-47b0bd212f2d.herokuapp.com/api/doc.json |
+
+### Comptes de test (fixtures — charger avec `doctrine:fixtures:load`)
+
+| Rôle | Email | Mot de passe |
+|------|-------|-------------|
+| Admin | `admin@ferme.fr` | `admin123` |
+| Manager | `manager@ferme.fr` | `manager123` |
+| Client | `paul@test.fr` | `client123` |
+| Client | `marie@test.fr` | `client123` |
 
 ---
 
@@ -77,27 +96,78 @@ Variables d’environnement clés (voir `compose.yaml`, `.env.example`) : `DATAB
 
 ```
 src/
-  Entity/          # Entités Doctrine (mapping attributs PHP 8)
-  Repository/      # Repositories Doctrine uniquement (requêtes DB)
-  Controller/      # Contrôleurs fins (HTTP → service)
-  ApiResource/     # DTOs / ressources API Platform si séparation entité/API
-  Service/         # Logique métier
-  Message/         # Messages Messenger
-  MessageHandler/  # Handlers async
-  EventSubscriber/ # Écouteurs domaine
-  Security/        # Voters, authenticators
-  Form/            # Form types Symfony
-  Validator/       # Contraintes custom
+  Entity/           # Entités Doctrine (mapping attributs PHP 8)
+    Trait/           # Traits réutilisables (UuidEntityTrait)
+  Repository/       # Repositories Doctrine (requêtes DB)
+  Controller/
+    Front/           # Contrôleurs visiteurs (Home, Catalogue, Panier, Commande, Auth)
+    Admin/           # Contrôleurs back-office (Ferme, Produit, Stock, Order, User)
+    Api/V1/          # API REST (ApiController)
+  Form/             # Form types Symfony (ProduitType, RegistrationType, AdminUserType)
+  Security/         # Voters, Roles
+    Voter/           # CommandeVoter, PanierVoter
+  Service/          # Logique métier (MailerService)
+  Twig/             # Extensions Twig (ClassExtension)
+  DataFixtures/     # AppFixtures (jeu de données de test)
 config/
-  packages/        # Config bundles
-  routes/          # Routes additionnelles
-templates/         # Twig (hériter de layout/base)
-assets/            # JS/CSS via Asset Mapper
-tests/             # PHPUnit
-migrations/        # Doctrine migrations
+  packages/         # Config bundles
+  routes/           # Routes additionnelles
+templates/
+  layout/           # Layouts de base (base.html.twig, app.html.twig, admin.html.twig)
+  front/            # Pages visiteurs
+  admin/            # Pages back-office
+  emails/           # Templates d'emails
+assets/             # JS/CSS via Asset Mapper
+tests/              # PHPUnit
+  Unit/
+  Functional/
+migrations/         # Doctrine migrations
 ```
 
 Namespace racine : `App\`. Autoload PSR-4 dans `composer.json`.
+
+---
+
+## Modèle de données (16 entités)
+
+### Volaille et ferme
+
+| Entité | Rôle | Relations clés |
+|--------|------|----------------|
+| `Gallinace` | Superclasse volaille (Mapped Superclass ou héritage) | ManyToOne → `Enclos` |
+| `Poule` | Poule pondeuse | Hérite `Gallinace`, OneToMany → `Oeuf` |
+| `Coq` | Coq reproducteur | Hérite `Gallinace` |
+| `Poussin` | Jeune volaille | Hérite `Gallinace`, ManyToOne → `Naissance` |
+| `Enclos` | Enclos/poulailler | OneToMany → `Gallinace` |
+| `Oeuf` | Œuf pondu | ManyToOne → `Poule`, peut devenir `Incubation` |
+| `Couveuse` | Couveuse artificielle | OneToMany → `Incubation` |
+| `Incubation` | Période d'incubation d'un œuf | ManyToOne → `Oeuf` + `Couveuse` |
+| `Naissance` | Événement de naissance | OneToMany → `Poussin` |
+| `Nourriture` | Type d'aliment | ManyToMany → `Gallinace` (via `GallinaceNourriture`) |
+| `GallinaceNourriture` | Table pivot (ration) | ManyToOne → `Gallinace` + `Nourriture` |
+| `JournalFerme` | Journal d'activités quotidiennes | Champ `categorie` + `description` |
+
+### E-commerce
+
+| Entité | Rôle | Relations clés |
+|--------|------|----------------|
+| `Produit` | Produit vendu (œufs, viande, etc.) | OneToOne → `Stock` |
+| `Stock` | Stock d'un produit | OneToOne → `Produit` |
+| `Commande` | Commande client | ManyToOne → `Client`, OneToMany → `CommandeDetail` |
+| `CommandeDetail` | Ligne de commande | ManyToOne → `Commande` + `Produit` |
+| `Panier` | Panier d'achat | OneToOne → `Client`, OneToMany → `PanierProduit` |
+| `PanierProduit` | Ligne de panier | ManyToOne → `Panier` + `Produit` |
+| `Livraison` | Informations de livraison | OneToOne → `Commande` |
+| `Viande` | Produit carné (héritage `Produit` ou champ `type`) | Vente au poids |
+| `Ticket` | Ticket de support | ManyToOne → `User` |
+| `Client` | Utilisateur client | Étend `User`, OneToMany → `Commande`, OneToOne → `Panier` |
+| `Manager` | Utilisateur manager | Étend `User` |
+| `Admin` | Utilisateur admin | Étend `User` |
+| `User` | Entité de base (STI) | `type` : client, manager, admin |
+
+### Trait
+
+`UuidEntityTrait` : fournit un identifiant UUID automatique via `$id` + constructeur.
 
 ---
 
@@ -106,103 +176,124 @@ Namespace racine : `App\`. Autoload PSR-4 dans `composer.json`.
 ### Architecture
 
 - **Contrôleurs fins** : pas de logique métier ; déléguer aux services injectés.
-- **Services stateless** : une responsabilité par service ; interfaces pour les dépendances externes (Stripe, maps, mail).
-- **Entités = modèle persistence** : pas de dépendance HTTP dans les entités.
-- **DTO / Input** pour API Platform et formulaires complexes ; ne pas exposer toute l’entité si champs sensibles.
-- **Repository** : requêtes Doctrine uniquement ; pas de logique métier lourde.
-- **Messenger** : emails, notifications, traitements longs → messages async (`#[AsMessageHandler]`, routing dans `config/packages/messenger.yaml`).
-- **Events** : `EventSubscriber` pour effets de bord transverses (audit, notifications).
+- **Services stateless** : une responsabilité par service.
+- **Entités = modèle persistence** : pas de dépendance HTTP.
+- **Repository** : requêtes Doctrine uniquement ; pas de logique métier lourde. Utiliser `createBaseQueryBuilder()` avec `LEFT JOIN` pour les relations fréquentes.
+- **Messenger** : emails, notifications → messages async.
+- **Serialization groups** : utiliser des groupes (`api:produit:read`, `api:commande:write`, etc.) pour contrôler l'exposition API.
 
 ### Configuration et DI
 
-- Paramètres applicatifs dans `config/services.yaml` (`parameters:`) ou variables d’env — **jamais de secrets en dur**.
+- Paramètres applicatifs dans `config/services.yaml` (`parameters:`) ou variables d'env — **jamais de secrets en dur**.
 - Services auto-enregistrés via `App\:` + `autowire` / `autoconfigure`.
-- Préférer les **attributs PHP** (`#[Route]`, `#[IsGranted]`, `#[ORM\...]`, `#[ApiResource]`) aux YAML quand le bundle le supporte.
+- Préférer les **attributs PHP** (`#[Route]`, `#[IsGranted]`, `#[ORM\...]`) aux YAML.
 
 ### Doctrine
 
 - Migrations pour tout changement de schéma : `doctrine:migrations:diff` puis `migrate`.
 - Relations explicites (`inversedBy` / `mappedBy`), `cascade` et `orphanRemoval` seulement si justifiés.
-- Types : `DateTimeImmutable` pour les dates métier ; UUID si alignement avec `PlantText.txt`.
-- Index et contraintes uniques sur colonnes recherchées (email, slugs).
+- Types : `DateTimeImmutable` pour les dates métier ; UUID pour les identifiants (via `UuidEntityTrait`).
+- Index sur colonnes recherchées (email, statut commande, date).
 
 ### Sécurité
 
-- Hacher les mots de passe via `UserPasswordHasherInterface` — champ `passwordHash`, jamais en clair.
-- **CSRF** activé sur les formulaires web (`enable_csrf: true`).
-- **Voters** pour autorisation fine (propriétaire d’annonce, réservation, etc.).
-- API : JWT ou session selon client ; API Platform `security` / `securityPostDenormalize` sur les opérations sensibles.
+- Hacher les mots de passe via `UserPasswordHasherInterface`.
+- **CSRF** activé sur les formulaires web.
+- **Voters** pour autorisation fine (propriétaire commande/panier).
+- API : session Symfony (cookie), pas de JWT pour l'instant.
 - Valider et assainir toutes les entrées (`Validator`, types stricts PHP).
 - `access_control` et `#[IsGranted]` cohérents avec les rôles métier.
 
-### API Platform
+### API (NelmioApiDocBundle)
 
-- Déclarer `#[ApiResource]` sur entités ou DTO dédiés.
-- Operations explicites (`Get`, `Post`, `Patch`, `Delete`) avec `security` par opération.
-- Pagination, filtres (`#[ApiFilter]`) et serialization groups (`#[Groups]`) pour limiter les champs exposés.
-- Codes HTTP et exceptions domaine via `ProblemException` / `HttpException` appropriées.
-- Documenter les breaking changes d’API (version dans `api_platform.yaml`).
+- Documenter avec `#[OA\Get]`, `#[OA\Post]`, `#[OA\Response]`, `#[OA\RequestBody]`.
+- Utiliser `Nelmio\ApiDocBundle\Attribute\Model` pour référencer les entités.
+- Sérialization groups Symfony (`@Groups`) pour limiter les champs exposés.
+- Routes préfixées `/api/v1`.
+- Opérations sensibles protégées par `#[IsGranted]`.
 
 ### Formulaires et validation
 
-- Constraints sur entités/DTO (`#[Assert\...]`) + validation métier dans services si cross-champs.
-- `FormType` dédiés ; pas de `$request->request->get()` brut hors formulaires.
+- Constraints sur entités/DTO (`#[Assert\...]`).
+- `FormType` dédiés ; pas de `$request->request->get()` brut.
 
 ### Twig et front
 
-- Templates dans `templates/` ; blocs réutilisables, héritage `extends`.
-- Assets via **Asset Mapper** (`importmap.php`), Stimulus pour le JS interactif.
-- Turbo pour navigation partielle si pertinent ; éviter le JS inline massif.
+- Deux layouts : `app.html.twig` (front client), `admin.html.twig` (back-office).
+- Pages front : home, catalogue, panier, commandes, auth (login/register).
+- Pages admin : dashboard, produits, stocks, commandes, utilisateurs, ferme (enclos, couveuses, journal).
+- Assets via **Asset Mapper**, Stimulus pour le JS interactif.
+- Sidebar admin dans `layout/partials/admin/sidebar.html.twig`.
 
 ### Performance et qualité
 
-- Requêtes N+1 : `JOIN` / `addSelect` ou fetch joins dans repositories.
-- Cache Symfony pour config/routes en prod ; HTTP cache headers API Platform déjà configurés.
-- Logs via Monolog ; niveaux adaptés (`error` métier, pas de dump en prod).
-- Tests : tests fonctionnels pour parcours critiques (auth, réservation) ; PHPUnit dans `tests/`.
+- Requêtes N+1 : `JOIN` / `addSelect` dans les repositories (via `createBaseQueryBuilder()`).
+- Cache Symfony pour config/routes en prod.
+- Logs via Monolog ; niveaux adaptés.
+- Tests fonctionnels pour parcours critiques (auth, commande) ; PHPUnit dans `tests/`.
 
 ### Conventions de code
 
-- `declare(strict_types=1);` en tête des nouveaux fichiers PHP.
-- Types de retour et paramètres typés ; propriétés `private` + getters/setters ou **constructor promotion** pour DTOs.
+- `declare(strict_types=1);` en tête des fichiers PHP.
+- Types de retour et paramètres typés ; propriétés `private` + getters/setters.
 - Nommage anglais pour le code (classes, méthodes), français acceptable pour labels UI et messages utilisateur.
+- Serialization groups : préfixe `api:` suivi du nom de l'entité en minuscule et de l'opération (`read`, `write`).
 - Pas de commit de `.env`, secrets, ou `var/` / `vendor/`.
 
 ---
 
-## Domaines métier (ordre d’implémentation suggéré)
+## API REST — Endpoints
 
-1. **Users & auth** — inscription, login, OAuth (phase 2), 2FA, profils, documents identité
-2. **Listings** — annonces, médias, calendrier, tarifs
-3. **Search** — filtres, carte (Google Maps / Mapbox)
-4. **Bookings** — disponibilité, tarification, politiques d’annulation
-5. **Payments** — Stripe (MVP), commissions, remboursements
-6. **Messaging** — chat (Mercure pour temps réel)
-7. **Reviews** — notes, modération
-8. **Notifications** — email (Mailer), push/SMS (Notifier)
-9. **Admin** — back-office, reporting, litiges
+| Méthode | Path | Auth | Description |
+|---------|------|------|-------------|
+| GET | `/api/v1/produits` | Public | Liste des produits |
+| GET | `/api/v1/produits/{id}` | Public | Détail produit |
+| POST | `/api/v1/produits` | Admin | Créer un produit |
+| GET | `/api/v1/commandes` | Connecté | Mes commandes (admin = toutes) |
+| GET | `/api/v1/commandes/{id}` | Connecté | Détail commande |
+| GET | `/api/v1/panier` | Connecté | Mon panier |
+| POST | `/api/v1/panier/ajouter` | Connecté | Ajouter au panier |
+| GET | `/api/v1/stocks` | Public | Liste stocks |
+| GET | `/api/v1/stocks/{id}` | Public | Détail stock |
 
-Chaque feature : entité(s) + migration + repository + service + (controller ou API Resource) + tests ciblés.
+Documentation interactive : `/api/doc` (Swagger UI).
 
 ---
 
-## Intégrations externes (cahier des charges)
+## Domaine métier (entités principales)
 
-Stripe (MVP), Google Maps, SendGrid/Twilio/Firebase (notifications), OAuth Google/Facebook/Apple. Clés via variables d’environnement ; wrappers service injectables.
+### Volaille 🐔
+- `Poule` pond des `Oeuf` — suivi par date, qualité, quantité
+- `Coq` — reproduction avec `Poule` → `Oeuf` fécondé → `Incubation` en `Couveuse` → `Naissance` → `Poussin`
+- `Enclos` regroupe les `Gallinace` par typologie/densité
+- `Nourriture` + `GallinaceNourriture` pour tracer la consommation
+
+### E-commerce 🛒
+- `Produit` (œufs, viande, volailles vivantes) avec `Stock`
+- `Panier` → `Commande` → `CommandeDetail` + `Livraison`
+- `Client` passe commande, `Manager`/`Admin` gère les stocks
+
+### Back-office 📊
+- Dashboard avec indicateurs (stocks bas, nouvelles commandes)
+- Gestion des `Produit` + `Stock`
+- Gestion des `Commande` (statuts : en_attente, confirmée, expédiée, livrée, annulée)
+- Gestion des `User` (CRUD, rôles)
+- Gestion de la **Ferme** : `Enclos`/`Couveuse`/`JournalFerme`
 
 ---
 
 ## Git et livrables
 
-- Ne créer de **commit** ou **push** que sur demande explicite de l’utilisateur.
-- Messages de commit en français ou anglais, courts, orientés « pourquoi ».
-- Documenter les endpoints API et les décisions d’architecture dans le README ou docs dédiées si demandé.
+- Ne créer de **commit** ou **push** que sur demande explicite de l'utilisateur.
+- Messages de commit courts, orientés « pourquoi ».
+- Deux remotes : `origin` (GitHub), `heroku` (déploiement).
 
 ---
 
 ## Pièges connus
 
-- Le schéma `PlantText.txt` utilise des **UUID** ; les entités actuelles (`User`, `Document`) utilisent encore des `int` — migrer progressivement vers le modèle cible.
-- `security.yaml` contient des rôles hérités d’un autre projet (`ROLE_PRESTATAIRE`, etc.) — à remplacer par les rôles voyageur/hôte/admin du cahier des charges.
-- Redis et Mercure sont commentés dans Docker : activer avant cache distribué et temps réel.
-- Commandes `composer` / `bin/console` : privilégier le conteneur `php` pour cohérence avec l’environnement du projet.
+- Single Table Inheritance sur `User` : la colonne `type` doit être bien settée (client/manager/admin).
+- Les annotations `#[OA\Info]`, `#[OA\Server]`, `#[OA\SecurityScheme]` ne doivent figurer que dans `config/packages/nelmio_api_doc.yaml` — pas sur les classes contrôleur.
+- `createBaseQueryBuilder()` dans les repositories doit inclure les `LEFT JOIN` essentiels.
+- Les fixtures (`AppFixtures`) écrasent la base à chaque chargement.
+- Le `Procfile` Heroku exécute une release command (migrations + cache:clear) à chaque déploiement.
