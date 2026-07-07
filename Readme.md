@@ -2,6 +2,7 @@
 
 Vincent GASTON-CARRÈRE 4 IW 2
 Application web de gestion et de vente pour une ferme avicole : élevage de poules, suivi de production, vente d'œufs et de viande, gestion des enclos et couveuses.
+http://chicken-farm-47b0bd212f2d.herokuapp.com/
 
 ---
 
