@@ -1,4 +1,5 @@
-api_platform:
-    resource: .
-    type: api_platform
-    prefix: /api
+# Désactivé : pas d'API REST dans cette application
+# api_platform:
+#     resource: .
+#     type: api_platform
+#     prefix: /api

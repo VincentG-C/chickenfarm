@@ -1,8 +1,12 @@
 api_platform:
-    title: Hello API Platform
-    version: 1.0.0
+    enable_docs: false
+    enable_entrypoint: false
+    title: Chicken Farm API
+    version: '1.0.0'
     defaults:
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
     show_webby: false
+    mapping:
+        paths: []
