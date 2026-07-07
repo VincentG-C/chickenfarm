@@ -15,6 +15,8 @@ use App\Repository\PanierRepository;
 use App\Repository\ProduitRepository;
 use App\Repository\StockRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Attribute\Model;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,6 +25,18 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
+#[OA\Info(
+    version: '1.0.0',
+    title: 'Chicken Farm API',
+    description: 'API REST de la ferme de poules — produits, commandes, panier, stocks',
+)]
+#[OA\Server(url: '/api/v1')]
+#[OA\SecurityScheme(
+    securityScheme: 'bearerAuth',
+    type: 'http',
+    scheme: 'bearer',
+    description: 'Authentification par session Symfony (cookie)'
+)]
 #[Route('/api/v1')]
 class ApiController extends AbstractController
 {
@@ -33,6 +47,19 @@ class ApiController extends AbstractController
 
     // ─── PRODUITS ───────────────────────────────────────────────
 
+    #[OA\Get(
+        path: '/api/v1/produits',
+        summary: 'Liste tous les produits',
+        tags: ['Produits'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des produits',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Produit::class, groups: ['api:produit:read']))
+        ),
+    )]
     #[Route('/produits', name: 'api_produits_list', methods: ['GET'])]
     public function listProduits(ProduitRepository $produitRepository): JsonResponse
     {
@@ -41,12 +68,46 @@ class ApiController extends AbstractController
         return $this->jsonResponse($produits, ['api:produit:read']);
     }
 
+    #[OA\Get(
+        path: '/api/v1/produits/{id}',
+        summary: 'Détail d\'un produit',
+        tags: ['Produits'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Produit trouvé',
+        content: new OA\JsonContent(ref: new Model(type: Produit::class, groups: ['api:produit:read'])),
+    )]
+    #[OA\Response(response: 404, description: 'Produit non trouvé')]
     #[Route('/produits/{id}', name: 'api_produits_show', methods: ['GET'])]
     public function showProduit(Produit $produit): JsonResponse
     {
         return $this->jsonResponse($produit, ['api:produit:read']);
     }
 
+    #[OA\Post(
+        path: '/api/v1/produits',
+        summary: 'Crée un nouveau produit (admin)',
+        tags: ['Produits'],
+    )]
+    #[OA\RequestBody(
+        description: 'Données du produit',
+        required: true,
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'nom', type: 'string', example: 'Œufs frais bio'),
+                new OA\Property(property: 'prix', type: 'string', example: '4.50'),
+                new OA\Property(property: 'description', type: 'string', example: 'Œufs de nos poules élevées en plein air.'),
+            ],
+            type: 'object',
+        ),
+    )]
+    #[OA\Response(
+        response: 201,
+        description: 'Produit créé',
+        content: new OA\JsonContent(ref: new Model(type: Produit::class, groups: ['api:produit:read'])),
+    )]
+    #[OA\Response(response: 403, description: 'Accès interdit (admin requis)')]
     #[Route('/produits', name: 'api_produits_create', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
     public function createProduit(Request $request, EntityManagerInterface $em): JsonResponse
@@ -66,6 +127,20 @@ class ApiController extends AbstractController
 
     // ─── COMMANDES ──────────────────────────────────────────────
 
+    #[OA\Get(
+        path: '/api/v1/commandes',
+        summary: 'Liste les commandes (client = ses commandes, admin = toutes)',
+        tags: ['Commandes'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des commandes',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Commande::class, groups: ['api:commande:read'])),
+        ),
+    )]
+    #[OA\Response(response: 401, description: 'Non authentifié')]
     #[Route('/commandes', name: 'api_commandes_list', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function listCommandes(CommandeRepository $commandeRepository): JsonResponse
@@ -82,6 +157,18 @@ class ApiController extends AbstractController
         return $this->jsonResponse($commandes, ['api:commande:read']);
     }
 
+    #[OA\Get(
+        path: '/api/v1/commandes/{id}',
+        summary: 'Détail d\'une commande',
+        tags: ['Commandes'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Commande trouvée',
+        content: new OA\JsonContent(ref: new Model(type: Commande::class, groups: ['api:commande:read'])),
+    )]
+    #[OA\Response(response: 403, description: 'Accès interdit')]
+    #[OA\Response(response: 404, description: 'Commande non trouvée')]
     #[Route('/commandes/{id}', name: 'api_commandes_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function showCommande(Commande $commande): JsonResponse
@@ -95,6 +182,16 @@ class ApiController extends AbstractController
 
     // ─── PANIER ─────────────────────────────────────────────────
 
+    #[OA\Get(
+        path: '/api/v1/panier',
+        summary: 'Affiche le panier de l\'utilisateur connecté',
+        tags: ['Panier'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Panier de l\'utilisateur',
+        content: new OA\JsonContent(ref: new Model(type: Panier::class, groups: ['api:panier:read'])),
+    )]
     #[Route('/panier', name: 'api_panier_show', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function showPanier(PanierRepository $panierRepository): JsonResponse
@@ -110,6 +207,28 @@ class ApiController extends AbstractController
         return $this->jsonResponse($panier, ['api:panier:read']);
     }
 
+    #[OA\Post(
+        path: '/api/v1/panier/ajouter',
+        summary: 'Ajoute un produit au panier',
+        tags: ['Panier'],
+    )]
+    #[OA\RequestBody(
+        description: 'Produit et quantité',
+        required: true,
+        content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'produitId', type: 'integer', example: 1),
+                new OA\Property(property: 'quantite', type: 'integer', example: 2),
+            ],
+            type: 'object',
+        ),
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Produit ajouté au panier',
+        content: new OA\JsonContent(ref: new Model(type: Panier::class, groups: ['api:panier:read'])),
+    )]
+    #[OA\Response(response: 400, description: 'Données invalides')]
     #[Route('/panier/ajouter', name: 'api_panier_add', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function addToPanier(
@@ -167,6 +286,19 @@ class ApiController extends AbstractController
 
     // ─── STOCKS ─────────────────────────────────────────────────
 
+    #[OA\Get(
+        path: '/api/v1/stocks',
+        summary: 'Liste tous les stocks',
+        tags: ['Stocks'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des stocks',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: Stock::class, groups: ['api:stock:read'])),
+        ),
+    )]
     #[Route('/stocks', name: 'api_stocks_list', methods: ['GET'])]
     public function listStocks(StockRepository $stockRepository): JsonResponse
     {
@@ -175,6 +307,16 @@ class ApiController extends AbstractController
         return $this->jsonResponse($stocks, ['api:stock:read']);
     }
 
+    #[OA\Get(
+        path: '/api/v1/stocks/{id}',
+        summary: 'Détail d\'un stock',
+        tags: ['Stocks'],
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Stock trouvé',
+        content: new OA\JsonContent(ref: new Model(type: Stock::class, groups: ['api:stock:read'])),
+    )]
     #[Route('/stocks/{id}', name: 'api_stocks_show', methods: ['GET'])]
     public function showStock(Stock $stock): JsonResponse
     {
