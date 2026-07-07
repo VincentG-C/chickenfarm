@@ -25,18 +25,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\SerializerInterface;
 
-#[OA\Info(
-    version: '1.0.0',
-    title: 'Chicken Farm API',
-    description: 'API REST de la ferme de poules — produits, commandes, panier, stocks',
-)]
-#[OA\Server(url: '/api/v1')]
-#[OA\SecurityScheme(
-    securityScheme: 'bearerAuth',
-    type: 'http',
-    scheme: 'bearer',
-    description: 'Authentification par session Symfony (cookie)'
-)]
 #[Route('/api/v1')]
 class ApiController extends AbstractController
 {
